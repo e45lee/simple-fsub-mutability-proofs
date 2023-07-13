@@ -52,6 +52,8 @@ Require Export Fsub.Tactics.
     indices for bound expression variables.  We make this explicit in
     the definitions below of the opening operations. *)
 
+(* New definition for different kinds of mutability -- for this
+    proof, however, only mut_readonly. *)
 Inductive mut : Set :=
   | mut_readonly : mut
 .
@@ -542,7 +544,7 @@ Inductive wf_sig : env -> sig -> Prop :=
 (** * #<a name="normal_form"></a># Types in Normal Form *)
 
 (** Part of the difficulty with this particular formalization of reference
-    immutability is that arbritrary types can be made readonly, including
+    immutability is that any type can be made readonly, including
     type variables.
     
     This flexibility means that we can have types of the form
@@ -554,20 +556,22 @@ Inductive wf_sig : env -> sig -> Prop :=
       - type variables
       - function / box / record types
       - readonly box and readonly record types
+
+    These definitions correspond to Figure 6 in the paper.
 *)
 
 Fixpoint merge_mutability (T : typ) (m : mut) {struct T} :=
     match T with
-    (*| typ_top => typ_top *)
+    (* We need to remember mutabilities that are used to qualify
+        - variables
+        - reference types [boxes and records]. *)
     | typ_bvar J => (typ_mut m T)
     | typ_fvar X => (typ_mut m (typ_fvar X))
     | typ_box T => (typ_mut m (typ_box T))
-    | typ_int T1 T2 => (typ_int (merge_mutability T1 m) (merge_mutability T2 m))
-    (* | typ_arrow T1 T2 => typ_arrow T1 T2
-    | typ_all T1 T2 => typ_all T1 T2 *)
-    (** Note that M' = mut_readonly = m. **)
-    (* | typ_mut M' T' => typ_mut M' T' *)
     | typ_record a T => (typ_mut m (typ_record a T))
+    (* mutability qualifiers need to be pushed through intersections. *)
+    | typ_int T1 T2 => (typ_int (merge_mutability T1 m) (merge_mutability T2 m))
+    (* All other types discard mutabilty qualifiers in normal form (functions/top) *)
     | _ => T
     end.
 
@@ -588,6 +592,10 @@ Fixpoint normal_form_typing (T : typ) {struct T} :=
 Arguments merge_mutability T m /.
 Arguments normal_form_typing T /.
 
+(**
+    It is useful to have a predicate for when a type is in normal form.
+    This corresponds to Figure 3 in the paper.
+*)
 Inductive in_normal_form : typ -> Prop :=
   | top_in_normal_form :
     in_normal_form typ_top
@@ -636,6 +644,10 @@ Inductive in_intersection : typ -> typ -> Prop :=
     in_intersection S R ->
     in_intersection S (typ_int L R).
 
+(**
+  This predicate indicates if a type is a component of an intersection type.
+  (that is, it is in the intersection and itself is not an intersection of other types).
+*)
 Definition in_intersection_component (S T : typ) :=
     (~ exists L R, S = typ_int L R) /\
     (in_intersection S T).
@@ -653,8 +665,9 @@ Qed.
 (** The definition of subtyping is straightforward.  It uses the
     [binds] relation from the MetatheoryEnv library (in the
     [sub_trans_tvar] case) and cofinite quantification (in the
-    [sub_all] case). *)
-
+    [sub_all] case). 
+    
+    This definition corresponds to Figure 4 (Subtyping) in the paper. *)
 Inductive sub : env -> typ -> typ -> Prop :=
   | sub_top : forall E S,
       wf_env E ->
@@ -681,9 +694,11 @@ Inductive sub : env -> typ -> typ -> Prop :=
       sub E T1 T2 ->
       sub E T2 T1 ->
       sub E (typ_box T1) (typ_box T2)
+  (** new subtyping rule: relating readonly-qualfied types. *)
   | sub_readonly : forall E T1 T2,
       sub E T1 T2 ->
       sub E (typ_mut mut_readonly T1) (typ_mut mut_readonly T2)
+  (** new subtyping rule: relating a readonly-qualified type to its unqualified version. *)
   | sub_readonly_mutable : forall E T1 T2,
       sub E T1 T2 ->
       sub E T1 (typ_mut mut_readonly T2)
@@ -709,9 +724,11 @@ Inductive sub : env -> typ -> typ -> Prop :=
       sub E T1 T2 ->
       sub E T2 T1 ->
       sub E (typ_record a T1) (typ_record a T2)
+  (** new subtyping rule: read-only records subtype covariently. *)
   | sub_readonly_record : forall E a T1 T2,
       sub E T1 T2 ->
       sub E (typ_mut mut_readonly (typ_record a T1)) (typ_mut mut_readonly (typ_record a T2))
+  (** new subtyping rule: relating denormalized types. *)
   | sub_denormalize : forall E T1 T2,
       wf_typ E T1 ->
       wf_typ E T2 ->
@@ -728,7 +745,9 @@ Notation "E |-s S <: T" := (sub E S T) (at level 70).
 (** The definition of typing is straightforward.  It uses the [binds]
     relation from the MetatheoryEnv library (in the [typing_var] case)
     and cofinite quantification in the cases involving binders (e.g.,
-    [typing_abs] and [typing_tabs]). *)
+    [typing_abs] and [typing_tabs]). 
+    
+    This definition corresponds to Figure 5 (Typing and Runtime Typing). *)
 
 (** Here, we need a helper definition as a record can only
     be typed if and only if its fields are unique. *)
@@ -784,6 +803,7 @@ Inductive typing : env -> sig -> exp -> typ -> Prop :=
       wf_sig E R ->
       typing E R e (typ_box T) ->
       typing E R (exp_unbox e) T
+  (** writing to a box requires *)
   | typing_set_box : forall E R e1 e2 T,
       wf_sig E R ->
       typing E R e1 (typ_box T) ->
@@ -794,21 +814,25 @@ Inductive typing : env -> sig -> exp -> typ -> Prop :=
       wf_sig E R ->
       Signatures.binds l (bind_sig T) R ->
       typing E R (exp_ref l) (typ_box T)
+  (** new rule for typing sealed expressions as readonly. *)
   | typing_seal : forall E R e T,
       typing E R e T ->
       typing E R (exp_seal e) (typ_mut mut_readonly T)
+  (** new rule: reading from a readonly box should produce a readonly result. *)
   | typing_unbox_readonly : forall E R e T,
       typing E R e (typ_mut mut_readonly (typ_box T)) ->
       typing E R (exp_unbox e) (typ_mut mut_readonly T)
   | typing_record : forall E R r T,
       typing_record_comp E R r T ->
       typing E R (exp_record r) T
+  (** new rule: reading from a readonly record should produce a readonly result. *)
   | typing_record_read : forall E R e a T,
       typing E R e (typ_record a T) ->
       typing E R (exp_record_read e a) T
   | typing_record_read_readonly : forall E R e a T,
       typing E R e (typ_mut mut_readonly (typ_record a T)) ->
       typing E R (exp_record_read e a) (typ_mut mut_readonly T)
+  (** writing to a record requires a mutable record. *)
   | typing_record_write : forall E R e1 a e2 T,
       typing E R e1 (typ_record a T) ->
       typing E R e2 T ->
@@ -933,6 +957,7 @@ Notation "E |-st s @ R" := (typing_store E R s) (at level 70).
 (* ********************************************************************** *)
 (** * #<a name="reduction"></a># Reduction *)
 
+(** record_lookup_ref is a helper for reading a location from a record *)
 Fixpoint record_lookup_ref (a : atom) (r : rec_comp) : option label :=
     match r with 
     | rec_ref a' l r => if (a === a') then Some l else record_lookup_ref a r
@@ -940,6 +965,7 @@ Fixpoint record_lookup_ref (a : atom) (r : rec_comp) : option label :=
     end.
 Notation "r # a" := (record_lookup_ref a r) (at level 70).
 
+(** Reduction -- this definition corresponds to Figure 7 (Reduction). *)
 Inductive red : exp -> store -> exp -> store -> Prop :=
   | red_app_1 : forall e1 e1' s1 s1' e2,
       expr e2 ->
@@ -1103,6 +1129,8 @@ Notation "< e1 | s1 > -->* < e1' | s1' >" := (redm e1 s1 e1' s1') (at level 69).
   [sealcomp] is a pre-ordering, and this is important, as expressions
   with additional seals take additional steps to reduce compared to the
   same expression with seals removed.
+
+  This definition corresponds to Definition 3.1 in the paper.
 *)
 
 Inductive sealcomp : exp -> exp -> Prop :=
@@ -1167,6 +1195,8 @@ with sealcomp_rec_comp : rec_comp -> rec_comp -> Prop :=
       sealcomp_rec_comp (rec_ref a l r1) (rec_ref a l r2)
 .
 
+(** An analogue of sealcomp for stores; this definition corresponds to
+    Definition 3.2 in the paper. *)
 Definition sealcomp_store (s1 : store) (s2 : store) :=
   (forall l v, (LabelMapImpl.MapsTo l v s1) ->
       exists v', (LabelMapImpl.MapsTo l v' s2) /\ sealcomp v v') /\
@@ -1179,6 +1209,8 @@ Notation "s1 <s= s2" := (sealcomp_store s1 s2) (at level 60).
 
 (* ********************************************************************** *)
 (** * #<a name="count_seals"></a># Counting seals *)
+
+(** Definition 3.3 in the paper. *)
 Fixpoint seal_count (e : exp)  {struct e} : nat :=
   match e with
   | exp_bvar i => 0

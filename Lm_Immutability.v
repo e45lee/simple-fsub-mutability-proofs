@@ -1,4 +1,5 @@
 (** Lemmas on re-sealing and typing and single-step immutability safety
+    for untyped Lm.
 
     Authors: Edward Lee, Ondrej Lhotak
 
@@ -9,6 +10,11 @@
     This file contains the main proofs concerning results around
     immutability -- namely, when if a term is well-typed,
     subterms which are typed readonly can be sealed to no ill effect.
+
+    - #<a href="##lemma_3.4">Lemma 3.4</a>#
+    - #<a href="##lemma_3.5">Lemma 3.5</a>#
+    - #<a href="##lemma_3.6">Lemma 3.6</a>#
+    - #<a href="##lemma_3.7">Lemma 3.7</a>#
 *)
 Require Export Fsub.Lm_Lemmas.
 
@@ -249,6 +255,7 @@ Proof with eauto.
       try solve [inversion Rede; eauto]...
 Qed.
 
+(** #<a name="lemma_3.7"># Lemma 3.7 *)
 Lemma sealcomp_value : forall e f,
   expr e ->
   expr f ->
@@ -285,6 +292,7 @@ Qed.
 (* ********************************************************************** *)
 (** * #<a name="safety_value"></a># Reduction when equivalent modulo sealing to a value *)
 
+(** #<a name="lemma_3.4"># Lemma 3.4 *)
 Lemma safety_value : forall e s f ns f' ns',
   sealcomp_store s ns ->
   sealcomp e f ->
@@ -331,7 +339,7 @@ Qed.
 (* ********************************************************************** *)
 (** * #<a name="safety"></a># Reduction when equivalent modulo sealing *)
 
-(** Lemma 3.6 / 5.3 *)
+(** #<a name="lemma_3.4"># Lemma 3.6 *)
 Lemma safety_step' : forall e s f ns f' ns',
   expr e ->
   well_formed_store s ->
@@ -556,8 +564,7 @@ Proof with eauto; try solve [simpl; eauto; intuition].
   }
 Qed.
 
-
-(** Lemma 3.5 / 5.2 *)
+(** #<a name="lemma_3.5"># Lemma 3.5 *)
 Lemma safety_step : forall e s e' s' f ns f' ns',
   sealcomp_store s ns ->
   sealcomp e f ->

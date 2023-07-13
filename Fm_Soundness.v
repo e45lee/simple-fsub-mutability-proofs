@@ -10,8 +10,14 @@
 
     Table of contents:
       - #<a href="##subtyping">Properties of subtyping</a>#
+      - #<a href="##lemma_4.3">Lemma 4.3 -- normal forms and subtyping</a>#
+      - #<a href="##lemma_4.3">Lemma 4.4 -- record subtyping inversion</a>#
+      - #<a href="##lemma_4.3">Lemma 4.6 -- read-only record subtyping inversion</a>#
       - #<a href="##typing">Properties of typing</a>#
+      - #<a href="##lemma_4.3">Lemma 4.8 -- read-only record canonical typing </a>#
       - #<a href="##preservation">Preservation</a>#
+      - #<a href="##lemma_4.3">Lemma 4.5 -- record canonical forms</a>#
+      - #<a href="##lemma_4.3">Lemma 4.7 -- read-only record canonical forms</a>#
       - #<a href="##progress">Progress</a># *)
 
 Require Export Fsub.Fm_NormalForms.
@@ -114,7 +120,6 @@ Qed.
 (* ********************************************************************** *)
 (** ** Normal Forms (16) and Subtyping *)
 
-
 Lemma merge_mutability_sub : forall E T m,
   wf_env E ->
   wf_typ E T ->
@@ -159,6 +164,7 @@ Proof with eauto 4 using sub_reflexivity;
   eapply wf_typ_intersect...
 Qed.
 
+(** #<a name="lemma_4.3"</a># Lemma 4.3: nf(T) = T under the subtyping relationship. *)
 Lemma sub_normal_form_equivalent : forall E T,
   wf_env E ->
   wf_typ E T ->
@@ -1013,6 +1019,7 @@ Proof with simpl in *; autorewrite with core in *;
     + right; exists T0... repeat split...
 Qed.
 
+(** #<a name="lemma_4.4"></a># Lemma 4.4: Record Subtyping Inversion *)
 Lemma sub_inv_record : forall E S a T1 T,
   in_intersection (typ_record a T1) (normal_form_typing T) ->
   sub E S T ->
@@ -1043,6 +1050,7 @@ Proof with simpl in *; autorewrite with core in *;
     repeat (split; eauto 4)...
 Qed.
 
+(** #<a name="lemma_4.6"></a># Lemma 4.6: Read-Only Record Subtyping Inversion *)
 Lemma sub_inv_readonly_record : forall E S a T1 T,
   in_intersection (typ_record a T1) (normal_form_typing T) \/
   in_intersection (typ_mut mut_readonly (typ_record a T1)) (normal_form_typing T) ->
@@ -1103,185 +1111,8 @@ Proof with simpl in *; autorewrite with core in *;
     right... right... right...  exists (normal_form_typing T1); split...
 Qed.
 
-Lemma typing_inv_abs : forall E R S1 e1 T,
-  typing E R (exp_abs S1 e1) T ->
-  forall U1 U2, sub E T (typ_arrow U1 U2) ->
-     sub E U1 S1
-  /\ exists S2, exists L, forall x, x `notin` L ->
-     typing (x ~ bind_typ S1 ++ E) R (open_ee e1 x) S2 /\ sub E S2 U2.
-Proof with simpl in *; eauto using sub_inv_var, sub_reflexivity;
-  repeat (fold merge_mutability in *; fold normal_form_typing in *).
-  intros E R S1 e1 T Typ.
-  dependent induction Typ; intros U1 U2 Sub...
-
-  (** Some facts to make automation work *)
-  assert (wf_typ E (typ_arrow U1 U2))...
-  assert (type U1). {
-    eapply type_from_wf_typ with (E := E)...
-  }
-  assert (type U2). {
-    eapply type_from_wf_typ with (E := E)...
-  }
-
-  assert (wf_typ E (typ_arrow S1 T1))...
-  assert (type S1). {
-    eapply type_from_wf_typ with (E := E)...
-  }
-  assert (type T1). {
-    eapply type_from_wf_typ with (E := E)...
-  }
-
-  Case "typing_sub".
-    unshelve 
-      epose proof 
-        (sub_inv_arrow E 
-          (typ_arrow S1 T1) 
-          (normal_form_typing U1) 
-          (normal_form_typing U2)
-          (typ_arrow (normal_form_typing U1) (normal_form_typing U2))
-          _ _) as InvSub...
-    autorewrite with core...
-    eapply sub_transitivity; [exact Sub|]; apply sub_arrow...
-    destruct InvSub as [[S' BadS'] | [[S' BadS'] | GoodCase]]...
-    - inversion BadS'; subst; discriminate...
-    - inversion BadS'; subst; discriminate...
-    - destruct GoodCase as [S3 [S2 [NormS3 [NormS2 [IntS3S2 [SubS3 SubS2]]]]]]...
-      inversion IntS3S2 as [S T EqArr EqS EqT | |]; subst...
-      inversion EqArr; subst...
-      split...
-      + exists T1. exists L...
-        intros x Fr...
-        split...
-Qed.
-
-Lemma typing_inv_tabs : forall E R S1 e1 T,
-  typing E R (exp_tabs S1 e1) T ->
-  forall U1 U2, sub E T (typ_all U1 U2) ->
-     sub E U1 S1
-  /\ exists S2, exists L, forall X, X `notin` L ->
-     typing (X ~ bind_sub U1 ++ E) R (open_te e1 X) (open_tt S2 X)
-     /\ sub (X ~ bind_sub U1 ++ E) (open_tt S2 X) (open_tt U2 X).
-Proof with simpl in *; eauto using sub_inv_var, sub_reflexivity;
-  repeat (fold merge_mutability in *; fold normal_form_typing in *); simpl_env.
-  intros E R S1 e1 T Typ.
-  dependent induction Typ; intros U1 U2 Sub...
-
-  (** Some facts to make automation work *)
-  assert (wf_typ E (typ_all U1 U2)) as WfTypAllU1U2...
-  assert (type U1). {
-    eapply type_from_wf_typ with (E := E)...
-  }
-  assert (wf_typ E (typ_all S1 T1)) as WfTypAllS1T1...
-  assert (type S1). {
-    eapply type_from_wf_typ with (E := E)...
-  }
-
-  Case "typing_sub".
-    unshelve epose proof
-      (sub_inv_all E (typ_all S1 T1) 
-        (normal_form_typing U1)
-        (normal_form_typing U2)
-        (normal_form_typing (typ_all U1 U2))
-        _
-        _
-      ) as InvSub...
-    autorewrite with core...
-    eapply sub_transitivity; [exact Sub|]; apply sub_all with (L := L `union` dom E)...
-      intros X Fr...
-      rewrite <- normal_form_open_tt...
-      eapply sub_normalize_right... eapply sub_reflexivity...
-      econstructor...
-      eapply wf_typ_open with (T1 := U1); eauto 4.
-      eapply wf_typ_weaken_head...
-
-    destruct InvSub as [[S' BadS'] | [[S' BadS'] | GoodCase]]...
-    - inversion BadS'; subst; discriminate...
-    - inversion BadS'; subst; discriminate...
-    - destruct GoodCase as [L' [S2 [S3 [NormS2 [IntS2S3 [SubS2 SubS3]]]]]]...
-      inversion IntS2S3 as [S T EqAll EqS EqT | |]; subst...
-      inversion EqAll; subst...
-      split...
-      + exists T1; exists (L' `union` L)...
-        intros X Fr...
-        split...
-        * rewrite_env (empty ++ X ~ bind_sub U1 ++ E).
-          eapply typing_narrowing with (Q := S1)...
-        * unshelve epose proof (SubS3 X _) as [NormOpen OpenSub]...
-          repeat rewrite <- normal_form_open_tt in OpenSub...
-          rewrite_env (empty ++ X ~ bind_sub U1 ++ E).
-          eapply sub_narrowing with (Q := normal_form_typing U1)...
-          eapply sub_transitivity with (Q := normal_form_typing (open_tt T1 X))...
-          eapply sub_normalize_right; eapply sub_reflexivity; auto.
-            eapply wf_typ_open with (T1 := S1)...
-            eapply wf_typ_weaken_head; auto...
-          eapply sub_transitivity with (Q := normal_form_typing (open_tt U2 X))...
-          eapply sub_normalize_left; eapply sub_reflexivity; auto.
-            eapply wf_typ_open with (T1 := U1); eauto 4.
-            eapply wf_typ_weaken_head; auto...
-Qed.
-
-Lemma typing_inv_ref : forall E R l T,
-  typing E R (exp_ref l) T ->
-  forall U, sub E T (typ_box U) ->
-    exists T', sub E T' U /\ sub E U T' /\ Signatures.binds l (bind_sig T') R.
-Proof with simpl in *; simpl_env; eauto using sub_inv_var;
-  repeat fold merge_mutability in *; repeat fold normal_form_typing in *.
-  intros E R l T Typ.
-  dependent induction Typ; intros U Sub...
-  Case "typing_sub".
-    unshelve epose proof 
-      (sub_inv_ref _ (typ_box T) (normal_form_typing U) _ _ Sub)
-      as InvSub...
-    destruct InvSub as [[S' IntS'] | [S1 [IntS1 [SubS1L SubS1R]]]]...
-    - exfalso... inversion IntS'; subst... discriminate.
-    - inversion IntS1 as [S2 T2 EqS1 | |]; subst...
-      inversion EqS1; simpl in *; subst...
-      exists T... repeat split...
-Qed.
-
-Lemma typing_inv_readonly_ref : forall E R l T,
-  typing E R (exp_ref l) T ->
-  forall U, sub E T (typ_mut mut_readonly (typ_box U)) ->
-    exists T', sub E T' U /\ sub E U T' /\ Signatures.binds l (bind_sig T') R.
-Proof with simpl in *; simpl_env; eauto using sub_inv_var;
-  repeat fold merge_mutability in *; repeat fold normal_form_typing in *.
-  intros E R l T Typ.
-  dependent induction Typ; intros U Sub...
-  Case "typing_sub".
-    unshelve epose proof 
-      (sub_inv_readonly_ref _ (typ_box T) (normal_form_typing U) _ _ Sub)
-      as InvSub...
-    destruct InvSub as [
-      [S' IntS'] 
-      | [[S' IntS'RO] 
-      | [[S1 [IntS1 [SubS1L SubS1R]]]
-      |  [S1 [IntS1RO [SubS1L SubS1R]]]]]]...
-    + exfalso... inversion IntS'; subst... discriminate.
-    + exfalso... inversion IntS'RO; subst... discriminate.
-    + inversion IntS1 as [S2 T2 EqS1 | |]; subst...
-      inversion EqS1; simpl in *; subst...
-      exists T... repeat split...
-    + exfalso... inversion IntS1RO; subst... discriminate.
-Qed.
-
-
-Lemma typing_inv_sealed_readonly_ref : forall E R l T,
-  typing E R (exp_seal (exp_ref l)) T ->
-  forall U, sub E T (typ_mut mut_readonly (typ_box U)) ->
-    exists T', sub E T' U /\ sub E U T' /\ Signatures.binds l (bind_sig T') R.
-Proof with simpl in *; simpl_env; eauto using sub_inv_var, sub_reflexivity;
-  repeat fold merge_mutability in *; repeat fold normal_form_typing in *.
-  intros E R l T Typ.
-  dependent induction Typ; intros U Sub...
-  Case "typing_sub".
-    assert (typing E R (exp_ref l) (typ_mut mut_readonly T)) as Typ'.
-      eapply typing_sub...
-    unshelve epose proof (typing_inv_readonly_ref _ _ _ _ Typ' _ Sub)...
-Qed.
-
 (* ********************************************************************** *)
 (** ** Sub and Typing canonical forms (13 1/2)                            *)
-
 
 Lemma sub_canonical_top : forall E S T,
   (forall S', in_intersection_component S' (normal_form_typing S) -> S' = typ_top) ->
@@ -1550,7 +1381,7 @@ Proof with simpl in *; autorewrite with core in *;
   - exfalso...
 Qed.
 
-(** Canonical typing forms *)
+(** Canonical typing forms. *)
 
 Lemma typing_canonical_ref : forall E R l T,
   typing E R (exp_ref l) T ->
@@ -1577,8 +1408,6 @@ Proof with simpl in *; eauto; repeat fold merge_mutability in *; repeat fold nor
       as [M [IntCompM Eq]]; subst...
     destruct (CanForm M IntCompM) as [EqTop | [[U EqBox] | [U EqReadBox]]]; subst...
 Qed.
-
-
 
 Lemma typing_canonical_record_rec : forall E R r T,
   typing_record_comp E R r T ->
@@ -1608,6 +1437,7 @@ Proof with simpl in *; eauto; repeat fold merge_mutability in *; repeat fold nor
   - destruct (typing_canonical_record_rec _ _ _ _ H T')...
 Qed.
 
+(** #<a name="lemma_4.8"></a># Lemma 4.8 -- Sealed records are given a readonly type. *)
 Lemma typing_canonical_sealed_record : forall E R r T,
   typing E R (exp_seal (exp_record r)) T ->
   (forall T', in_intersection_component T' (normal_form_typing T)
@@ -1721,19 +1551,9 @@ Proof with eauto using typing_weakening_sig_head, typing_store_free_store.
       pose proof (WfTypS l') as [Fwd Back]...
 Qed.
 
+
 (* ********************************************************************** *)
-(** ** Preservation (20) *)
-
-Lemma red_record_comp_preserves_labels : forall a r s r' s',
-  a `notin` record_dom r ->
-  red_record_comp r s r' s' ->
-  a `notin` record_dom r'.
-Proof with eauto.
-  intros * Fr Red.
-  induction Red; simpl in *...
-Qed.
-#[export] Hint Resolve red_record_comp_preserves_labels : core.
-
+(** ** Typing inversion (15) *)
 
 Lemma something : forall E S1 S2 T,
   sub E (typ_int S1 S2) T ->
@@ -2294,6 +2114,195 @@ Proof with simpl in *; simpl_env; eauto 4 using sub_inv_var, sub_reflexivity;
     unshelve epose proof (typing_inv_readonly_record _ _ _ _ _ _ Typ' _ _ Sub)...
 Qed.
 
+Lemma typing_inv_abs : forall E R S1 e1 T,
+  typing E R (exp_abs S1 e1) T ->
+  forall U1 U2, sub E T (typ_arrow U1 U2) ->
+     sub E U1 S1
+  /\ exists S2, exists L, forall x, x `notin` L ->
+     typing (x ~ bind_typ S1 ++ E) R (open_ee e1 x) S2 /\ sub E S2 U2.
+Proof with simpl in *; eauto using sub_inv_var, sub_reflexivity;
+  repeat (fold merge_mutability in *; fold normal_form_typing in *).
+  intros E R S1 e1 T Typ.
+  dependent induction Typ; intros U1 U2 Sub...
+
+  (** Some facts to make automation work *)
+  assert (wf_typ E (typ_arrow U1 U2))...
+  assert (type U1). {
+    eapply type_from_wf_typ with (E := E)...
+  }
+  assert (type U2). {
+    eapply type_from_wf_typ with (E := E)...
+  }
+
+  assert (wf_typ E (typ_arrow S1 T1))...
+  assert (type S1). {
+    eapply type_from_wf_typ with (E := E)...
+  }
+  assert (type T1). {
+    eapply type_from_wf_typ with (E := E)...
+  }
+
+  Case "typing_sub".
+    unshelve 
+      epose proof 
+        (sub_inv_arrow E 
+          (typ_arrow S1 T1) 
+          (normal_form_typing U1) 
+          (normal_form_typing U2)
+          (typ_arrow (normal_form_typing U1) (normal_form_typing U2))
+          _ _) as InvSub...
+    autorewrite with core...
+    eapply sub_transitivity; [exact Sub|]; apply sub_arrow...
+    destruct InvSub as [[S' BadS'] | [[S' BadS'] | GoodCase]]...
+    - inversion BadS'; subst; discriminate...
+    - inversion BadS'; subst; discriminate...
+    - destruct GoodCase as [S3 [S2 [NormS3 [NormS2 [IntS3S2 [SubS3 SubS2]]]]]]...
+      inversion IntS3S2 as [S T EqArr EqS EqT | |]; subst...
+      inversion EqArr; subst...
+      split...
+      + exists T1. exists L...
+        intros x Fr...
+        split...
+Qed.
+
+Lemma typing_inv_tabs : forall E R S1 e1 T,
+  typing E R (exp_tabs S1 e1) T ->
+  forall U1 U2, sub E T (typ_all U1 U2) ->
+     sub E U1 S1
+  /\ exists S2, exists L, forall X, X `notin` L ->
+     typing (X ~ bind_sub U1 ++ E) R (open_te e1 X) (open_tt S2 X)
+     /\ sub (X ~ bind_sub U1 ++ E) (open_tt S2 X) (open_tt U2 X).
+Proof with simpl in *; eauto using sub_inv_var, sub_reflexivity;
+  repeat (fold merge_mutability in *; fold normal_form_typing in *); simpl_env.
+  intros E R S1 e1 T Typ.
+  dependent induction Typ; intros U1 U2 Sub...
+
+  (** Some facts to make automation work *)
+  assert (wf_typ E (typ_all U1 U2)) as WfTypAllU1U2...
+  assert (type U1). {
+    eapply type_from_wf_typ with (E := E)...
+  }
+  assert (wf_typ E (typ_all S1 T1)) as WfTypAllS1T1...
+  assert (type S1). {
+    eapply type_from_wf_typ with (E := E)...
+  }
+
+  Case "typing_sub".
+    unshelve epose proof
+      (sub_inv_all E (typ_all S1 T1) 
+        (normal_form_typing U1)
+        (normal_form_typing U2)
+        (normal_form_typing (typ_all U1 U2))
+        _
+        _
+      ) as InvSub...
+    autorewrite with core...
+    eapply sub_transitivity; [exact Sub|]; apply sub_all with (L := L `union` dom E)...
+      intros X Fr...
+      rewrite <- normal_form_open_tt...
+      eapply sub_normalize_right... eapply sub_reflexivity...
+      econstructor...
+      eapply wf_typ_open with (T1 := U1); eauto 4.
+      eapply wf_typ_weaken_head...
+
+    destruct InvSub as [[S' BadS'] | [[S' BadS'] | GoodCase]]...
+    - inversion BadS'; subst; discriminate...
+    - inversion BadS'; subst; discriminate...
+    - destruct GoodCase as [L' [S2 [S3 [NormS2 [IntS2S3 [SubS2 SubS3]]]]]]...
+      inversion IntS2S3 as [S T EqAll EqS EqT | |]; subst...
+      inversion EqAll; subst...
+      split...
+      + exists T1; exists (L' `union` L)...
+        intros X Fr...
+        split...
+        * rewrite_env (empty ++ X ~ bind_sub U1 ++ E).
+          eapply typing_narrowing with (Q := S1)...
+        * unshelve epose proof (SubS3 X _) as [NormOpen OpenSub]...
+          repeat rewrite <- normal_form_open_tt in OpenSub...
+          rewrite_env (empty ++ X ~ bind_sub U1 ++ E).
+          eapply sub_narrowing with (Q := normal_form_typing U1)...
+          eapply sub_transitivity with (Q := normal_form_typing (open_tt T1 X))...
+          eapply sub_normalize_right; eapply sub_reflexivity; auto.
+            eapply wf_typ_open with (T1 := S1)...
+            eapply wf_typ_weaken_head; auto...
+          eapply sub_transitivity with (Q := normal_form_typing (open_tt U2 X))...
+          eapply sub_normalize_left; eapply sub_reflexivity; auto.
+            eapply wf_typ_open with (T1 := U1); eauto 4.
+            eapply wf_typ_weaken_head; auto...
+Qed.
+
+Lemma typing_inv_ref : forall E R l T,
+  typing E R (exp_ref l) T ->
+  forall U, sub E T (typ_box U) ->
+    exists T', sub E T' U /\ sub E U T' /\ Signatures.binds l (bind_sig T') R.
+Proof with simpl in *; simpl_env; eauto using sub_inv_var;
+  repeat fold merge_mutability in *; repeat fold normal_form_typing in *.
+  intros E R l T Typ.
+  dependent induction Typ; intros U Sub...
+  Case "typing_sub".
+    unshelve epose proof 
+      (sub_inv_ref _ (typ_box T) (normal_form_typing U) _ _ Sub)
+      as InvSub...
+    destruct InvSub as [[S' IntS'] | [S1 [IntS1 [SubS1L SubS1R]]]]...
+    - exfalso... inversion IntS'; subst... discriminate.
+    - inversion IntS1 as [S2 T2 EqS1 | |]; subst...
+      inversion EqS1; simpl in *; subst...
+      exists T... repeat split...
+Qed.
+
+Lemma typing_inv_readonly_ref : forall E R l T,
+  typing E R (exp_ref l) T ->
+  forall U, sub E T (typ_mut mut_readonly (typ_box U)) ->
+    exists T', sub E T' U /\ sub E U T' /\ Signatures.binds l (bind_sig T') R.
+Proof with simpl in *; simpl_env; eauto using sub_inv_var;
+  repeat fold merge_mutability in *; repeat fold normal_form_typing in *.
+  intros E R l T Typ.
+  dependent induction Typ; intros U Sub...
+  Case "typing_sub".
+    unshelve epose proof 
+      (sub_inv_readonly_ref _ (typ_box T) (normal_form_typing U) _ _ Sub)
+      as InvSub...
+    destruct InvSub as [
+      [S' IntS'] 
+      | [[S' IntS'RO] 
+      | [[S1 [IntS1 [SubS1L SubS1R]]]
+      |  [S1 [IntS1RO [SubS1L SubS1R]]]]]]...
+    + exfalso... inversion IntS'; subst... discriminate.
+    + exfalso... inversion IntS'RO; subst... discriminate.
+    + inversion IntS1 as [S2 T2 EqS1 | |]; subst...
+      inversion EqS1; simpl in *; subst...
+      exists T... repeat split...
+    + exfalso... inversion IntS1RO; subst... discriminate.
+Qed.
+
+
+Lemma typing_inv_sealed_readonly_ref : forall E R l T,
+  typing E R (exp_seal (exp_ref l)) T ->
+  forall U, sub E T (typ_mut mut_readonly (typ_box U)) ->
+    exists T', sub E T' U /\ sub E U T' /\ Signatures.binds l (bind_sig T') R.
+Proof with simpl in *; simpl_env; eauto using sub_inv_var, sub_reflexivity;
+  repeat fold merge_mutability in *; repeat fold normal_form_typing in *.
+  intros E R l T Typ.
+  dependent induction Typ; intros U Sub...
+  Case "typing_sub".
+    assert (typing E R (exp_ref l) (typ_mut mut_readonly T)) as Typ'.
+      eapply typing_sub...
+    unshelve epose proof (typing_inv_readonly_ref _ _ _ _ Typ' _ Sub)...
+Qed.
+
+(* ********************************************************************** *)
+(** ** Preservation (20) *)
+
+Lemma red_record_comp_preserves_labels : forall a r s r' s',
+  a `notin` record_dom r ->
+  red_record_comp r s r' s' ->
+  a `notin` record_dom r'.
+Proof with eauto.
+  intros * Fr Red.
+  induction Red; simpl in *...
+Qed.
+#[export] Hint Resolve red_record_comp_preserves_labels : core.
+
 Lemma preservation : forall E R e s e' s' T,
   typing E R e T ->
   typing_store E R s ->
@@ -2820,8 +2829,7 @@ Proof with eauto.
   exists (normal_form_typing U1)...
 Qed.
 
-(* ********************************************************************** *)
-(** ** Progress (16) *)
+
 
 Lemma value_record_comp_implies_record_comp : forall r,
   value_record_comp r ->
@@ -2832,7 +2840,7 @@ Proof with eauto.
 Qed.
 #[export] Hint Resolve value_record_comp_implies_record_comp : core.
 
-
+(** #<a name="lemma_4.5"></a># Lemma 4.5/4.10: Canonical forms for records.*)
 Lemma canonical_form_record_rec : forall e a R T,
   value e ->
   typing empty R e T ->
@@ -2887,7 +2895,7 @@ Proof with eauto.
   exists (normal_form_typing U1)...
 Qed.
 
-
+(** #<a name="lemma_4.7"></a># Lemma 4.7: Canonical forms for read-only records.*)
 Lemma canonical_form_readonly_record_rec : forall e a R T,
   value e ->
   typing empty R e T ->
@@ -3016,6 +3024,8 @@ Proof with eauto; intuition.
 Qed.
 #[export] Hint Resolve typing_store_implies_wellformed_store : core.
 
+(* ********************************************************************** *)
+(** ** Progress (16) *)
 Lemma progress : forall e s R T,
   typing empty R e T ->
   typing_store empty R s ->

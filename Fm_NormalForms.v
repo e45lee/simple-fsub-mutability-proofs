@@ -8,16 +8,15 @@
     This file contains a number of administrative lemmas that we
     require for proving type-safety.  These lemmas mainly concern
     the predicates [in_normal_form] as well as the normalization functions
-    [merge_mutability] and [normal_form_typing].
+    [merge_mutability] and [normal_form_typing].  These lemmas
+    are necessary for relating syntactically inequivalent but semantically
+    equivalent types: types like:
 
-    This file also contains regularity lemmas, which show that various
-    relations hold only for locally closed terms.  In addition to
-    being necessary to complete the proof of type-safety, these lemmas
-    help demonstrate that our definitions are correct; they would be
-    worth proving even if they are unneeded for any "real" proofs.
+      readonly (readonly X) and (readonly X)
 
     Table of contents:
       - #<a href="##normal_forms">Lemmas concering normal forms</a>#
+      - #<a href="##lemma_4.2">Lemma 4.2 (normalizing is idempotent) </a>#
 
 *)
 Require Export Fsub.Fm_Lemmas.
@@ -191,6 +190,7 @@ Proof with simpl in *; eauto;
   + f_equal...
 Qed.
 
+(** #<a name="##lemma_4.2"></a># Lemma 4.2: Normalizing is idempotent.  *)
 Lemma normal_form_in_normal_form : forall T,
   (normal_form_typing (normal_form_typing T)) = (normal_form_typing T).
 Proof with simpl in *; eauto;

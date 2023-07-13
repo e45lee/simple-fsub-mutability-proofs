@@ -9,6 +9,11 @@
     This file contains the main proofs concerning results around
     multi-step immutability -- namely, when if a term is well-typed,
     subterms which are typed readonly can be sealed to no ill effect.
+
+    - #<a href="##lemma_5.8">Lemma 5.8</a>#
+    - #<a href="##lemma_5.9">Lemma 5.9</a>#
+    - #<a href="##lemma_5.12">Lemma 5.12</a>#
+    - #<a href="##lemma_5.13">Lemma 5.13</a>#
 *)
 Require Export Fsub.Fm_Immutability.
 
@@ -111,7 +116,7 @@ Proof with auto.
   eapply redm_step... assumption.
 Qed.
 
-(** Lemma 5.8 *)
+(** #<a name="lemma_5.8"></a> Lemma 5.8 *)
 Lemma safety_multistep : forall e s e' s' f ns R T,
   sealcomp_store s ns ->
   sealcomp e f ->
@@ -135,7 +140,7 @@ Proof with eauto.
     eapply multistep_trans...
 Qed.
 
-(** Lemma 5.9 *)
+(** #<a name="lemma_5.9"></a> Lemma 5.8 *)
 Lemma safety_value_multistep : forall e s e' s' f ns R T,
   sealcomp_store s ns ->
   sealcomp e f ->
@@ -250,7 +255,7 @@ Proof with eauto using safety_component_step'.
       eapply multistep_trans with (e' := g) (s' := t)...
 Qed.
 
-(** Lemma 5.12 *)
+(** #<a name="lemma_5.12"></a> Lemma 5.12 *)
 Lemma safety_value_multistep' : forall e s f ns f' ns',
   expr f ->
   expr e ->
@@ -337,7 +342,7 @@ Proof with eauto.
 Qed.
 
 
-(** Lemma 5.13 *)
+(** #<a name="lemma_5.13"></a> Lemma 5.13 *)
 Lemma typed_safety_value_multistep' : forall e s f ns f' ns' E R T,
   expr f ->
   expr e ->

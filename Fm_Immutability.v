@@ -9,10 +9,17 @@
     This file contains the main proofs concerning results around
     immutability -- namely, when if a term is well-typed,
     subterms which are typed readonly can be sealed to no ill effect.
+
+    - #<a href="##lemma_5.1">Lemma 5.1</a>#
+    - #<a href="##lemma_5.11">Lemma 5.11</a>#
+    - #<a href="##lemma_5.5">Lemma 5.5</a>#
+    - #<a href="##lemma_5.6">Lemma 5.6</a>#
+    - #<a href="##lemma_5.7">Lemma 5.7</a>#
+    - #<a href="##lemma_5.8">Lemma 5.8</a>#
 *)
 Require Export Fsub.Fm_Soundness.
 
-(** Terms can be transparently sealed without affecting typing. *)
+(** #<a name="lemma_5.1"></a># Lemma 5.1: Terms can be transparently sealed without affecting typing. *)
 Lemma readonly_term_can_be_sealed_transparently : forall E R e T,
   typing E R e (typ_mut mut_readonly T) ->
   typing E R (exp_seal e) (typ_mut mut_readonly T).
@@ -26,7 +33,7 @@ Proof with simpl in *; autorewrite with core in *; eauto 4 using sub_reflexivity
   apply wf_typ_merge_mutability...
 Qed.
 
-(** Seals can be transparently removed without affecting typing as well. *)
+(** #<a name="lemma_5.11"></a># Lemma 5.11: Seals can be transparently removed without affecting typing as well. *)
 Lemma term_can_be_given_same_type_as_seal : forall E R e T,
   typing E R (exp_seal e) T ->
   typing E R e T.
@@ -337,6 +344,7 @@ Qed.
 (* ********************************************************************** *)
 (** * #<a name="safety_value"></a># Reduction when equivalent modulo sealing to a value *)
 
+(** #<a name="lemma_5.5"></a># Lemma 5.5 *)
 Lemma safety_value : forall e s f ns f' ns',
   sealcomp_store s ns ->
   sealcomp e f ->
@@ -383,7 +391,7 @@ Qed.
 (* ********************************************************************** *)
 (** * #<a name="safety"></a># Reduction when equivalent modulo sealing *)
 
-(** Lemma 3.6 / 5.3 *)
+(** #<a name="lemma_5.7"></a># Lemma 5.7 *)
 Lemma safety_step' : forall e s f ns f' ns',
   expr e ->
   well_formed_store s ->
@@ -620,8 +628,7 @@ Proof with eauto; try solve [simpl; eauto; intuition].
   }
 Qed.
 
-
-(** Lemma 3.5 / 5.2 *)
+(** #<a name="lemma_5.6"></a># Lemma 5.6 *)
 Lemma safety_step : forall e s e' s' f ns f' ns',
   sealcomp_store s ns ->
   sealcomp e f ->

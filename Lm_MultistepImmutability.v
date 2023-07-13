@@ -9,6 +9,8 @@
     This file contains the main proofs concerning results around
     multi-step immutability -- namely, when if a term is well-typed,
     subterms which are typed readonly can be sealed to no ill effect.
+
+    - #<a href="##lemma_3.8">Lemma 3.8</a>#
 *)
 
 Require Export Fsub.Lm_Immutability.
@@ -115,7 +117,7 @@ Proof with eauto using safety_component_step'.
       eapply multistep_trans with (e' := g) (s' := t)...
 Qed.
 
-(** Lemma 5.12 *)
+(** #<a name="lemma_3.8"># Lemma 3.8 *)
 Lemma safety_value_multistep' : forall e s f ns f' ns',
   expr f ->
   expr e ->
