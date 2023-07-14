@@ -33,7 +33,7 @@ To extract the pre-built proofs and documentation (into a folder called `proofs`
 
 In addition, the Coq documentation can be found online at (hopefully soon!):
 
-<https://e45lee.github.io/simple-fsub-mutability-proofs>
+<https://e45lee.github.io/simple-fsub-mutability-proofs/toc.html>
  
 ## Getting Started -- Building Locally
 
