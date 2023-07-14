@@ -21,7 +21,7 @@ associated with the Coq proofs as well, a pre-built archive of the compiled Coq 
 can be downloaded and inspected by pulling the following automatically generated Docker image.
 
 ```
-    docker pull ghcr.io/e45lee/simple-fsub-immutability-proofs:main
+    docker pull ghcr.io/e45lee/simple-fsub-mutability-proofs:main
 ```
 
 The Coq proofs and generated documentation can be found under `/proofs` in the generated Docker image.
@@ -33,7 +33,7 @@ To extract the pre-built proofs and documentation (into a folder called `proofs`
 
 In addition, the Coq documentation can be found online at (hopefully soon!):
 
-<https://e45lee.github.io/simple-fsub-immutability-proofs>
+<https://e45lee.github.io/simple-fsub-mutability-proofs>
  
 ## Getting Started -- Building Locally
 
