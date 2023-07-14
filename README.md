@@ -12,7 +12,7 @@ formalized in this artifact.
 
 1.  System Lm, our untyped reference immutability calculus with the dynamic
     immutability safety results discussed in Section 3 of the paper.
-2.  System Fm, our typed calculi building on Lm and Fm with both the static
+2.  System Fm, our typed calculi building on Lm and System F-sub with both the static
     soundness results discussed in Section 4 of our paper as well as the
     dynamic immutability safety results discussed in Section 4 of the paper.
 
@@ -31,7 +31,7 @@ To extract the pre-built proofs and documentation (into a folder called `proofs`
     docker run -w / ghcr.io/e45lee/simple-fsub-mutability-proofs:main tar c proofs | tar x
 ```
 
-In addition, the Coq documentation can be found online at:
+In addition, the Coq documentation can be found online at (hopefully soon!):
 
 <https://e45lee.github.io/simple-fsub-immutability-proofs>
  
