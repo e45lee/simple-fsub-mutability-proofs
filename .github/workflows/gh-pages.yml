@@ -35,7 +35,9 @@ jobs:
       - name: Build the Docker image
         run: docker build . --file Dockerfile --tag proofs
       - name: Extract the proof HTML
-        run: docker run -w /proofs/html --rm proofs tar cz . > github-pages.tar.gz
+        run: docker run -w /proofs/html ghcr.io/e45lee/simple-fsub-mutability-proofs:main tar c . | tar x --one-top-level=_site
+      - name: Create artifact
+        run: tar czf github-pages.tar.gz _site
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2
 
