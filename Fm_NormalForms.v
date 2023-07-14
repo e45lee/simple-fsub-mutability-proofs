@@ -190,7 +190,7 @@ Proof with simpl in *; eauto;
   + f_equal...
 Qed.
 
-(** #<a name="##lemma_4.2"></a># Lemma 4.2: Normalizing is idempotent.  *)
+(** #<a name="lemma_4.2"></a># Lemma 4.2: Normalizing is idempotent.  *)
 Lemma normal_form_in_normal_form : forall T,
   (normal_form_typing (normal_form_typing T)) = (normal_form_typing T).
 Proof with simpl in *; eauto;

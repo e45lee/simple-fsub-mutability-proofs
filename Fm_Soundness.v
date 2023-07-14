@@ -742,9 +742,6 @@ Proof with simpl_env;
 Qed.
 
 
-(* ********************************************************************** *)
-(** * #<a name="preservation"></a># Preservation *)
-
 
 (* ********************************************************************** *)
 (** ** Inversion of typing and subtyping (13) *)
@@ -2290,6 +2287,10 @@ Proof with simpl in *; simpl_env; eauto using sub_inv_var, sub_reflexivity;
     unshelve epose proof (typing_inv_readonly_ref _ _ _ _ Typ' _ Sub)...
 Qed.
 
+
+(* ********************************************************************** *)
+(** * #<a name="preservation"></a># Preservation *)
+
 (* ********************************************************************** *)
 (** ** Preservation (20) *)
 
@@ -2561,10 +2562,6 @@ Proof with simpl_env; eauto 5 using typing_record_weakening_sig_head, typing_wea
     destruct (IHTyp TypS s' r1') as [Rr1' [WfR1' [TypingR1 StoreR1]]]...
     exists Rr1'; split...
 Qed.
-
-
-(* ********************************************************************** *)
-(** * #<a name="progress"></a># Progress *)
 
 
 (* ********************************************************************** *)
@@ -3023,6 +3020,10 @@ Proof with eauto; intuition.
   edestruct (Bk v)...
 Qed.
 #[export] Hint Resolve typing_store_implies_wellformed_store : core.
+
+(* ********************************************************************** *)
+(** * #<a name="progress"></a># Progress *)
+
 
 (* ********************************************************************** *)
 (** ** Progress (16) *)
