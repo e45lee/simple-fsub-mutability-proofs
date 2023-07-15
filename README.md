@@ -37,6 +37,11 @@ In addition, the Coq documentation can be found online at (hopefully soon!):
  
 ## Getting Started -- Building Locally
 
+This repository has a submodule for coqdocjs.  If you haven't already, run:
+```
+  git submodule update --init
+```
+
 We have prepared a Dockerfile to test and build our artifact locally.  To build the Docker
 image containing our proof artifact and documentation, run the following command from the top-level
 directory of the repository.
