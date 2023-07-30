@@ -15,7 +15,6 @@
     - #<a href="##lemma_5.5">Lemma 5.5</a>#
     - #<a href="##lemma_5.6">Lemma 5.6</a>#
     - #<a href="##lemma_5.7">Lemma 5.7</a>#
-    - #<a href="##lemma_5.8">Lemma 5.8</a>#
 *)
 Require Export Fsub.Fm_Soundness.
 

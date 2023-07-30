@@ -11,13 +11,13 @@
     Table of contents:
       - #<a href="##subtyping">Properties of subtyping</a>#
       - #<a href="##lemma_4.3">Lemma 4.3 -- normal forms and subtyping</a>#
-      - #<a href="##lemma_4.3">Lemma 4.4 -- record subtyping inversion</a>#
-      - #<a href="##lemma_4.3">Lemma 4.6 -- read-only record subtyping inversion</a>#
+      - #<a href="##lemma_4.4">Lemma 4.4 -- record subtyping inversion</a>#
+      - #<a href="##lemma_4.5">Lemma 4.5 -- record canonical forms</a>#
+      - #<a href="##lemma_4.6">Lemma 4.6 -- read-only record subtyping inversion</a>#
+      - #<a href="##lemma_4.7">Lemma 4.7 -- read-only record canonical forms</a>#
       - #<a href="##typing">Properties of typing</a>#
-      - #<a href="##lemma_4.3">Lemma 4.8 -- read-only record canonical typing </a>#
+      - #<a href="##lemma_4.8">Lemma 4.8 -- read-only record canonical typing </a>#
       - #<a href="##preservation">Preservation</a>#
-      - #<a href="##lemma_4.3">Lemma 4.5 -- record canonical forms</a>#
-      - #<a href="##lemma_4.3">Lemma 4.7 -- read-only record canonical forms</a>#
       - #<a href="##progress">Progress</a># *)
 
 Require Export Fsub.Fm_NormalForms.
