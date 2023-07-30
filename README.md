@@ -80,7 +80,7 @@ reduction semantics are a small extension of System Lm's (the only new forms are
 type abstraction and type application), the proofs in these files are very similar
 to the proofs of the analogous results for System Lm in `Lm_Immutability.v` and `Lm_MultistepImmutability.v`.
 
-Lemmas 5.1, 5.5, 5.6, 5.7, 5.8, and 5.11 can be found in `Fm_Immutability.v`.
+Lemmas 5.1, 5.5, 5.6, 5.7 and 5.11 can be found in `Fm_Immutability.v`.
 Lemmas 5.8, 5.9, 5.12, and 5.13 can be found in `Fm_MultistepImmutability.v`.
 
 ## Pre-built proofs and documentation

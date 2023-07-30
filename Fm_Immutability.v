@@ -11,10 +11,10 @@
     subterms which are typed readonly can be sealed to no ill effect.
 
     - #<a href="##lemma_5.1">Lemma 5.1</a>#
-    - #<a href="##lemma_5.11">Lemma 5.11</a>#
     - #<a href="##lemma_5.5">Lemma 5.5</a>#
     - #<a href="##lemma_5.6">Lemma 5.6</a>#
     - #<a href="##lemma_5.7">Lemma 5.7</a>#
+    - #<a href="##lemma_5.11">Lemma 5.11</a>#
 *)
 Require Export Fsub.Fm_Soundness.
 
