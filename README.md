@@ -15,25 +15,6 @@ formalized in this artifact.
 2.  System Fm, our typed calculi building on Lm and System F-sub with both the static
     soundness results discussed in Section 4 of our paper as well as the
     dynamic immutability safety results discussed in Section 4 of the paper.
-
-While the repository contains the sources of the Coq files and the documentation
-associated with the Coq proofs as well, a pre-built archive of the compiled Coq proof
-can be downloaded and inspected by pulling the following automatically generated Docker image.
-
-```
-    docker pull ghcr.io/e45lee/simple-fsub-mutability-proofs:main
-```
-
-The Coq proofs and generated documentation can be found under `/proofs` in the generated Docker image.
-To extract the pre-built proofs and documentation (into a folder called `proofs`), run:
-
-```
-    docker run -w / ghcr.io/e45lee/simple-fsub-mutability-proofs:main tar c proofs | tar x
-```
-
-In addition, the Coq documentation can be found online at (hopefully soon!):
-
-<https://e45lee.github.io/simple-fsub-mutability-proofs/toc.html>
  
 ## Getting Started -- Building Locally
 
@@ -102,3 +83,23 @@ to the proofs of the analogous results for System Lm in `Lm_Immutability.v` and 
 Lemmas 5.1, 5.5, 5.6, 5.7, 5.8, and 5.11 can be found in `Fm_Immutability.v`.
 Lemmas 5.8, 5.9, 5.12, and 5.13 can be found in `Fm_MultistepImmutability.v`.
 
+## Pre-built proofs and documentation
+
+While the repository contains the sources of the Coq files and the documentation
+associated with the Coq proofs as well, a pre-built archive of the compiled Coq proof
+can be downloaded and inspected by pulling the following automatically generated Docker image.
+
+```
+    docker pull ghcr.io/e45lee/simple-fsub-mutability-proofs:main
+```
+
+The Coq proofs and generated documentation can be found under `/proofs` in the generated Docker image.
+To extract the pre-built proofs and documentation (into a folder called `proofs`), run:
+
+```
+    docker run -w / ghcr.io/e45lee/simple-fsub-mutability-proofs:main tar c proofs | tar x
+```
+
+In addition, the Coq documentation can be found online at (hopefully soon!):
+
+<https://e45lee.github.io/simple-fsub-mutability-proofs/toc.html>
