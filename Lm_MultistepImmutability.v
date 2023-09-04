@@ -30,6 +30,15 @@ Proof with auto.
   eapply redm_step... assumption.
 Qed.
 
+(** Monotone reduction; here, we want to relate how reduction relates
+    to the number of seals in each term.
+
+    A reduction sequence can be broken up into segments (redm_monotone_component)
+    where the seal count goes down; seal counts go up in betweeen segments (redm_monotone_jump).
+
+    This is useful for the immutability equivalence proof as reductions which result in a jump
+    in the sealed program must correspond to actual reduction steps in the original program.
+*)
 Inductive redm_monotone_component : exp -> store -> exp -> store -> Prop :=
   | redm_monotone_component_eq : forall e s,
     redm_monotone_component e s e s
@@ -108,7 +117,6 @@ Proof with eauto using safety_component_step'.
   * eapply safety_component_step' in H as 
       [g [t [StepsG [StoreCompG SealCompG]]]]...
     unshelve epose proof (safety_step' g t e' s' e'' s'' _ _ _ _ _)
-      (** admits here are regularity lemmas *)
       as [[? [? Bad]] | [g'' [t'' [Redg'' [StoreCompG'' SealCompG'']]]]]...
     - intuition.
     - unshelve epose proof (IHRedf_Monotone g'' _ _ t'' _ _)
